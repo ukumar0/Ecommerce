@@ -12,14 +12,25 @@ const initialState = {
 };
 
 function AuthRegister() {
-
     const [formData, setFormData] = useState(initialState);
+    const [error, setError] = useState(null);
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    function onSubmit(event) {
-    event.preventDefault();
-    
-    dispatch(registerUser(formData).then(()=> navigate('/auth/login')))
+
+    async function onSubmit(event) {
+        event.preventDefault();
+        setError(null);
+
+        try {
+            const result = await dispatch(registerUser(formData));
+            if (registerUser.fulfilled.match(result)) {
+                navigate('/auth/login');
+            } else if (registerUser.rejected.match(result)) {
+                setError(result.error.message || 'Registration failed.');
+            }
+        } catch (err) {
+            setError('An unexpected error occurred.');
+        }
     }
 
     return (
@@ -33,6 +44,7 @@ function AuthRegister() {
                     </Link>
                 </p>
             </div>
+            {error && <div className="text-red-500 text-center">{error}</div>}
             <CommonForm
                 formControls={registerFormControls}
                 buttonText={'Create Account'}

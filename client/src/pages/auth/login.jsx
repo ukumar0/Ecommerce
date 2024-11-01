@@ -1,7 +1,9 @@
 import { useState } from "react";
 import CommonForm from "@/components/common/form";
 import { LoginFormControls } from "@/config";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { authenticateUser } from "@/store/auth-slice";
 
 const initialState = {
     email: '',
@@ -9,11 +11,29 @@ const initialState = {
 };
 
 function AuthLogin() {
-
     const [formData, setFormData] = useState(initialState);
+    const [error, setError] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
 
-    function onSubmit() {
+    async function onSubmit(event) {
+        event.preventDefault();
+        setIsLoading(true);
+        setError(null);
 
+        try {
+            const result = await dispatch(authenticateUser(formData));
+            if (authenticateUser.fulfilled.match(result)) {
+                navigate('/dashboard'); // Navigate to dashboard or preferred page
+            } else {
+                setError(result.error.message || 'Login failed.');
+            }
+        } catch (err) {
+            setError('An unexpected error occurred.');
+        } finally {
+            setIsLoading(false);
+        }
     }
 
     return (
@@ -27,9 +47,10 @@ function AuthLogin() {
                     </Link>
                 </p>
             </div>
+            {error && <div className="text-red-500 text-center">{error}</div>}
             <CommonForm
                 formControls={LoginFormControls}
-                buttonText={'Sign In'}
+                buttonText={isLoading ? 'Signing In...' : 'Sign In'}
                 formData={formData}
                 setFormData={setFormData}
                 onSubmit={onSubmit}
