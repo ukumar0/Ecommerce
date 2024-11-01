@@ -21,7 +21,7 @@ function AuthLogin() {
             <div className="text-center">
                 <h1 className="text-3xl font-bold tracking-tight text-foreground">Welcome</h1>
                 <p>
-                    Don't have an account?
+                    Dont have an account?
                     <Link className="font-medium ml-2 text-primary hover:underline" to="/auth/register">
                         Register
                     </Link>
