@@ -5,23 +5,23 @@ const cors = require('cors');
 const authRouter = require('./routes/auth/auth_routes')
 
 //database connection
-mongoose.connect('<Nosql connectivity link>').then(()=>console.log('MongoDB connected')).catch((error) => console.log(error)) ;
+mongoose.connect('<NoSql Connectivity>').then(()=>console.log('MongoDB connected')).catch((error) => console.log(error)) ;
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(
     cors({
-        origin : 'https://localhost:5173',
-        methods : ['GET', 'POST', 'DELETE', 'PUT'],
-        allowedHeaders : [
-            "Content-Type",
+        origin: 'http://localhost:5173',
+        methods: ['GET', 'POST', 'DELETE', 'PUT'],
+        allowedHeaders: [
+            'Content-Type',
             'Authorization',
             'Cache-Control',
             'Expires',
             'Pragma'
         ],
-        credentials : true,
+        credentials: true,
     })
 );
 

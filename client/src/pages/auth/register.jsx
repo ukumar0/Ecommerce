@@ -28,7 +28,7 @@ function AuthRegister() {
             } else if (registerUser.rejected.match(result)) {
                 setError(result.error.message || 'Registration failed.');
             }
-        } catch (err) {
+        } catch {
             setError('An unexpected error occurred.');
         }
     }
