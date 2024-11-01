@@ -2,49 +2,97 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../../models/User');
 
+// Register
+const registerUser = async (req, res) => {
+    const { username, email, password } = req.body;
 
-//register
-const registerUser = async(req, res)=>{
-    const {username, email, password} = req.body;
+    try {
+        // Check if the user already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({
+                success: false,
+                message: "User already exists",
+            });
+        }
 
-    try{
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(password, 12);
 
-    }catch(e){
-        console.log(e);
-        res.status(500).json({
-            success: false,
-            message: "Some error occurred, please config",
-        });
-    }
-}
-
-//login
-const login = async(req, res)=>{
-    const {username, email, password} = req.body;
-
-    try{
-        const hash = await bcrypt.hash(password, 12);
+        // Create a new user
         const newUser = new User({
-            username, email, password:hash,
+            username,
+            email,
+            password: hashedPassword,
         });
 
-        await newUser.save()
+        await newUser.save();
+
         res.status(200).json({
             success: true,
-            message: "Registration Successful",
+            message: "Registration successful",
         });
-    }catch(e){
+    } catch (e) {
         console.log(e);
         res.status(500).json({
             success: false,
-            message: "Some error occurred, please config",
+            message: "Some error occurred, please try again later",
         });
     }
-}
+};
 
-//logout
+// Login
+const login = async (req, res) => {
+    const { email, password } = req.body;
 
+    try {
+        // Check if user exists
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({
+                success: false,
+                message: "User does not exist",
+            });
+        }
 
-//auth Middleware
+        // Validate password
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid credentials",
+            });
+        }
 
-module.exports = { registerUser };
+        // Generate JWT
+        const token = jwt.sign(
+            { userId: user._id },
+            process.env.JWT_SECRET || 'your_secret_key',
+            { expiresIn: '1h' }
+        );
+
+        res.cookie('token', token, { httpOnly: true });
+        res.status(200).json({
+            success: true,
+            message: "Login successful",
+            token,
+        });
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({
+            success: false,
+            message: "Some error occurred, please try again later",
+        });
+    }
+};
+
+// Logout
+const logout = (req, res) => {
+    res.clearCookie('token');
+    res.status(200).json({
+        success: true,
+        message: "Logout successful",
+    });
+};
+
+module.exports = { registerUser, login, logout };
